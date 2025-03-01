@@ -1,0 +1,36 @@
+<html>
+    <head>
+        <title>ВычМат лаб 1</title>
+        <link id="stylesheet" rel="stylesheet" type="text/css" href="assets/css/style.css" disabled>
+    </head>
+    <body>
+        <header>
+            <h1 style="font-family: Monomakh, sans-serif;">
+                Вычислительная математика
+            </h1>
+            <ul>
+                <li>Лабораторная работа №1</li>
+                <li>Калиев Александр Дмитриевич</li>
+                <li>P3211</li>
+                <li>408724</li>
+            </ul>
+        </header>
+
+        <button onclick="toggleStyles()" style="position: absolute; top: 10px; right: 10px;">Toggle styles</button>
+
+        <main>
+            
+        </main>
+
+        <script>
+            function toggleStyles() {
+                var stylesheet = document.getElementById('stylesheet');
+                if (stylesheet.disabled) {
+                    stylesheet.disabled = false;
+                } else {
+                    stylesheet.disabled = true;
+                }
+            }
+        </script>
+    </body>
+</html>

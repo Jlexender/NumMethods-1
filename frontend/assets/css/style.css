@@ -1,0 +1,26 @@
+@import url('https://fonts.googleapis.com/css2?family=Monomakh&display=swap');
+
+body {
+    font-family: Roboto, sans-serif;
+    font-size: 24px;
+    line-height: 1.5;
+    color: #333;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+    background-image: url('../img/slav-bg.jpg');
+    background-size: cover;
+}
+
+header {
+    padding: 10px;
+    background: linear-gradient(to right, #840000, #e00000a1);
+    color: #ffffff;
+}
+
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 10px 100px;
+    overflow: hidden;
+}
