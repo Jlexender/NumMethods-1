@@ -16,14 +16,17 @@
             </ul>
         </header>
 
-        <button onclick="toggleStyles()" style="position: absolute; top: 10px; right: 10px;">Toggle styles</button>
+        <button onclick="toggleStyles()" style="position: absolute; top: 10px; right: 10px;">Стили</button>
 
         <main>
-            <input type="number" id="n" placeholder="n" min="1" max="20" required>
-            <button onclick="generateMatrix()">Generate Matrix</button>
-            <div id="matrix-container"></div>
-            <button onclick="calculate()">Calculate</button>
-            
+            <input type="number" id="n" placeholder="Размерность" min="1" max="20" style="width: 200px; margin-left: 40px;" required>
+            <input type="number" id="accuracy" placeholder="Точность" style="width: 200px; margin-left: 40px;" required>
+
+            <div id="matrix-container" style="align-items: center; justify-content: center; display: flex; flex-direction: column;"></div>
+            <button onclick="generateMatrix()">Построить матрицу</button>
+            <button onclick="calculate()">Посчитать</button>
+
+            <div id="result" style="margin-top: 20px;"></div>
         </main>
     </body>
 
@@ -43,7 +46,7 @@
         function generateMatrix() {
             var n = document.getElementById('n').value;
             var container = document.getElementById('matrix-container');
-            container.innerHTML = ''; // Clear previous matrix
+            container.innerHTML = ''; 
 
             if (n < 1 || n > 20) {
                 alert('Please enter a number between 1 and 20');
@@ -65,6 +68,18 @@
                     cell.appendChild(input);
                     row.appendChild(cell);
                 }
+
+                var resultCell = document.createElement('td');
+                var resultInput = document.createElement('input');
+                resultInput.id = 'result' + i;
+                resultInput.type = 'text';
+                resultInput.style.width = '70px';
+                resultInput.style.height = '70px';
+                resultInput.style.textAlign = 'center';
+                resultInput.style.border = '3px solid black';
+                resultCell.appendChild(resultInput);
+                row.appendChild(resultCell);
+
                 table.appendChild(row);
             }
             container.appendChild(table);
@@ -73,30 +88,35 @@
     
     <script>
         function calculate() {
-            var container = document.getElementById('matrix-container');
-            var rows = container.getElementsByTagName('tr');
+            var n = document.getElementById('n').value;
+            var accuracy = document.getElementById('accuracy').value;
             var matrix = [];
+            var resultVector = [];
 
-            for (var i = 0; i < rows.length; i++) {
-                var cells = rows[i].getElementsByTagName('td');
-                var row = [];
-                for (var j = 0; j < cells.length; j++) {
-                    var input = cells[j].getElementsByTagName('input')[0];
-                    row.push(parseFloat(input.value) || 0);
-                }
-                matrix.push(row);
+            var table = document.querySelector('#matrix-container table');
+            if (!table) {
+                alert('Please generate the matrix first');
+                return;
             }
 
-            var xhr = new XMLHttpRequest();
-            xhr.open('POST', '/api', true);
-            xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === 4 && xhr.status === 200) {
-                    var response = JSON.parse(xhr.responseText);
-                    alert('Calculation result: ' + response.result);
+            for (var i = 0; i < n; i++) {
+                var row = [];
+                for (var j = 0; j < n; j++) {
+                    var cell = table.rows[i].cells[j].firstChild;
+                    row.push(parseFloat(cell.value) || 0);
                 }
+                matrix.push(row);
+                var resultCell = document.getElementById('result' + i);
+                resultVector.push(parseFloat(resultCell.value) || 0);
+            }
+
+            var requestBody = {
+                coefficientMatrix: matrix,
+                resultVector: resultVector,
+                accuracy: parseFloat(accuracy)
             };
-            xhr.send(JSON.stringify({ matrix: matrix }));
+
+            console.log(JSON.stringify(requestBody));
         }
     </script>
 </html>

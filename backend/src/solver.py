@@ -19,6 +19,21 @@ def validate(A, b):
     if np.linalg.det(A) == 0:
         raise HTTPException(status_code=400, detail="Matrix A must be invertible.")
 
+def ensure_diagonal_dominance(A, b):
+    n = A.shape[0]
+    for i in range(n):
+        row_sum = sum(abs(A[i][j]) for j in range(n) if j != i)
+        if abs(A[i][i]) < row_sum:
+            for k in range(i + 1, n):
+                if abs(A[k][i]) > row_sum:
+                    A[[i, k]] = A[[k, i]]
+                    b[[i, k]] = b[[k, i]]
+                    break
+            else:
+                raise HTTPException(status_code=400, detail="Cannot achieve diagonal dominance.")
+    return A, b
+
+
 def solve(eqSystem: EqSystemRequest):
     try:
         A = np.array(eqSystem.coefficientMatrix)
@@ -28,6 +43,7 @@ def solve(eqSystem: EqSystemRequest):
         x = np.zeros(n)
         eps = eqSystem.accuracy
         
+        A, b = ensure_diagonal_dominance(A, b)
         
         i = 0
         while i < MAX_ITERATIONS:
