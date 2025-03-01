@@ -3,43 +3,51 @@ from eqSystem import EqSystemRequest
 from fastapi import HTTPException, status
 
 MAX_ITERATIONS = 10000
-
-def validate(matrix: EqSystemRequest):
-    if len(matrix.matrix) == 0:
-        return {"detail": "Пустая матрица"}
-    if len(matrix.matrix) != len(matrix.matrix[0]):
-        return {"detail": "Неквадратная матрица"}
-    if any(len(row) != len(matrix.matrix) for row in matrix.matrix):
-        return {"detail": "Некорректная матрица"}
-    if len(matrix.resultVector) != len(matrix.matrix):
-        return {"detail": "Некорректный вектор b"}
-    return None
-
-def solve(matrix: EqSystemRequest):
-    if error := validate(matrix):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error["detail"])
     
-    n = len(matrix.matrix)
-    # simple iteration
+def set_max_iterations(iterations: int):
+    global MAX_ITERATIONS
+    MAX_ITERATIONS = iterations
+    return {"message": f"MAX_ITERATIONS changed to {iterations}."}
 
-    # check diagonal dominance
-    for i in range(n):
-        if 2 * abs(matrix.matrix[i][i]) <= sum(abs(matrix.matrix[i][j]) for j in range(n) if j != i):
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Матрица не является диагонально доминируемой")
+def validate(A, b):
+    if A.shape[0] != A.shape[1]:
+        raise HTTPException(status_code=400, detail="Matrix A must be square.")
+    if A.shape[0] != b.shape[0]:
+        raise HTTPException(status_code=400, detail="Matrix A and vector b must have compatible dimensions.")
+    if np.isnan(A).any() or np.isnan(b).any():
+        raise HTTPException(status_code=400, detail="Matrix A and vector b must not contain NaNs.")
+    if np.linalg.det(A) == 0:
+        raise HTTPException(status_code=400, detail="Matrix A must be invertible.")
 
-    x = np.zeros(n)
-    x_new = np.zeros(n)
-    accuracy = matrix.accuracy
-    total_iterations = 0
-    while total_iterations < MAX_ITERATIONS:
-        total_iterations += 1
-        for i in range(n):
-            x_new[i] = matrix.resultVector[i]
+def solve(eqSystem: EqSystemRequest):
+    try:
+        A = np.array(eqSystem.coefficientMatrix)
+        b = np.array(eqSystem.resultVector)
+        validate(A, b)
+        n = A.shape[0]
+        x = np.zeros(n)
+        eps = eqSystem.accuracy
+        
+        
+        i = 0
+        while i < MAX_ITERATIONS:
+            x_new = np.zeros(n)
             for j in range(n):
-                if i != j:
-                    x_new[i] -= matrix.matrix[i][j] * x[j]
-            x_new[i] /= matrix.matrix[i][i]
-        if np.linalg.norm(x_new - x) < accuracy:
-            break
-        x = x_new.copy()
-    return x.tolist()
+                x_new[j] = b[j]
+                for k in range(n):
+                    if j != k:
+                        x_new[j] -= A[j][k] * x[k]
+                x_new[j] /= A[j][j]
+            if max(abs(x_new - x)) < eps:
+                return {"solution": x_new.tolist(), "iterations": i}
+            x = x_new
+            i += 1
+
+        raise HTTPException(status_code=400, detail="Method did not converge.")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    
+
+
+    
