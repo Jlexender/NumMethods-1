@@ -23,12 +23,12 @@
             <input type="number" id="accuracy" placeholder="Точность" style="width: 200px; margin-left: 40px;" required>
 
             <div id="matrix-container" style="align-items: center; justify-content: center; display: flex; flex-direction: column;"></div>
-            <button onclick="generateMatrix()">Построить матрицу</button>
+            <button onclick="generateSystem()">Построить СЛАУ</button>
             <button onclick="calculate()">Посчитать</button>
             <input type="file" id="file"style="display: none;">
             <button onclick="handleFileLoad()">Загрузить из файла</button>
 
-            <div id="result" style="margin-top: 20px;"></div>
+            <div id="result" style="margin-top: 20px; font-weight: bold;"></div>
         </main>
     </body>
 
@@ -45,7 +45,7 @@
     </script>
 
     <script>
-        generateMatrix = () => {
+        generateSystem = () => {
             var n = document.getElementById('n').value;
             var container = document.getElementById('matrix-container');
             container.innerHTML = ''; 
@@ -120,20 +120,18 @@
 
             // console.log(JSON.stringify(requestBody));
 
-            var response = await fetchRequest('/api', 'POST', requestBody);
-        }
-
-        fetchRequest = async (url, method, body) => {
-            const response = await fetch(url, {
-                method: method,
+            var response = await fetch('/api', {
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(body)
+                body: JSON.stringify(requestBody)
             });
 
-            return response.json();
+            var data = await response.json();
+            var result = data;
         }
+
     </script>
 
     <script>
@@ -150,7 +148,7 @@
                     var accuracy = data.accuracy;
                     document.getElementById('n').value = n;
                     document.getElementById('accuracy').value = accuracy;
-                    generateMatrix();
+                    generateSystem();
                     var table = document.querySelector('#matrix-container table');
                     for (var i = 0; i < n; i++) {
                         for (var j = 0; j < n; j++) {
