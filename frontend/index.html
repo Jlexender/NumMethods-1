@@ -25,6 +25,8 @@
             <div id="matrix-container" style="align-items: center; justify-content: center; display: flex; flex-direction: column;"></div>
             <button onclick="generateMatrix()">Построить матрицу</button>
             <button onclick="calculate()">Посчитать</button>
+            <input type="file" id="file"style="display: none;">
+            <button onclick="handleFileLoad()">Загрузить из файла</button>
 
             <div id="result" style="margin-top: 20px;"></div>
         </main>
@@ -32,7 +34,7 @@
 
 
     <script>
-        function toggleStyles() {
+        toggleStyles = () => {
             var stylesheet = document.getElementById('stylesheet');
             if (stylesheet.disabled) {
                 stylesheet.disabled = false;
@@ -43,7 +45,7 @@
     </script>
 
     <script>
-        function generateMatrix() {
+        generateMatrix = () => {
             var n = document.getElementById('n').value;
             var container = document.getElementById('matrix-container');
             container.innerHTML = ''; 
@@ -87,7 +89,7 @@
     </script>
     
     <script>
-        function calculate() {
+        calculate = async () => {
             var n = document.getElementById('n').value;
             var accuracy = document.getElementById('accuracy').value;
             var matrix = [];
@@ -116,7 +118,51 @@
                 accuracy: parseFloat(accuracy)
             };
 
-            console.log(JSON.stringify(requestBody));
+            // console.log(JSON.stringify(requestBody));
+
+            var response = await fetchRequest('/api', 'POST', requestBody);
+        }
+
+        fetchRequest = async (url, method, body) => {
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
+            });
+
+            return response.json();
+        }
+    </script>
+
+    <script>
+        handleFileLoad = () => {
+            var fileInput = document.getElementById('file');
+            fileInput.click();
+            fileInput.addEventListener('change', function() {
+                var file = fileInput.files[0];
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var content = e.target.result;
+                    var data = JSON.parse(content);
+                    var n = data.coefficientMatrix.length;
+                    var accuracy = data.accuracy;
+                    document.getElementById('n').value = n;
+                    document.getElementById('accuracy').value = accuracy;
+                    generateMatrix();
+                    var table = document.querySelector('#matrix-container table');
+                    for (var i = 0; i < n; i++) {
+                        for (var j = 0; j < n; j++) {
+                            var cell = table.rows[i].cells[j].firstChild;
+                            cell.value = data.coefficientMatrix[i][j];
+                        }
+                        var resultCell = document.getElementById('result' + i);
+                        resultCell.value = data.resultVector[i];
+                    }
+                };
+                reader.readAsText(file);
+            });
         }
     </script>
 </html>

@@ -48,3 +48,9 @@ button {
 button:hover {
     background-color: #c00000;
 }
+
+input[type="file"] {
+    color: #f4f4f4;
+    padding: 10px;
+    margin: 0;
+}
