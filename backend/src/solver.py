@@ -30,8 +30,8 @@ def ensure_diagonal_dominance(A, b):
                     b[[i, k]] = b[[k, i]]
                     break
             else:
-                raise HTTPException(status_code=400, detail="Cannot achieve diagonal dominance.")
-    return A, b
+                return [A, b, False]
+    return [A, b, True]
 
 
 def solve(eqSystem: EqSystemRequest):
@@ -43,7 +43,7 @@ def solve(eqSystem: EqSystemRequest):
         x = np.zeros(n)
         eps = eqSystem.accuracy
         
-        A, b = ensure_diagonal_dominance(A, b)
+        A, b, dig_dom = ensure_diagonal_dominance(A, b)
         
         i = 0
         while i < MAX_ITERATIONS:
@@ -55,11 +55,17 @@ def solve(eqSystem: EqSystemRequest):
                         x_new[j] -= A[j][k] * x[k]
                 x_new[j] /= A[j][j]
             if max(abs(x_new - x)) < eps:
-                return {"solution": x_new.tolist(), "iterations": i}
+                return {"solution": x_new.tolist(), "iterations": i, 
+                "diagonalDominance": dig_dom, "mat_std_norm": np.linalg.norm(A),
+                "невязка": (np.dot(A, x_new) - b).tolist(),
+                "step_error": abs(x_new - x).tolist()
+                }
+
+        
             x = x_new
             i += 1
 
-        raise HTTPException(status_code=400, detail="Method did not converge.")
+        raise HTTPException(status_code=400, detail="Method did not converge.") 
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
