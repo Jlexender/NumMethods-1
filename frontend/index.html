@@ -129,7 +129,7 @@
             });
 
             var data = await response.json();
-           document.getElementById('result').innerText = 'Result: ' + data;
+           document.getElementById('result').innerText = 'Result: ' + JSON.stringify(data);
         }
 
     </script>
