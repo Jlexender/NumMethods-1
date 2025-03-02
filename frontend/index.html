@@ -27,6 +27,7 @@
             <button onclick="calculate()">Посчитать</button>
             <input type="file" id="file"style="display: none;">
             <button onclick="handleFileLoad()">Загрузить из файла</button>
+            <button onclick="randomSystem()">Рандомная СЛАУ</button>
 
             <div id="result" style="margin-top: 20px; font-weight: bold;"></div>
         </main>
@@ -79,6 +80,50 @@
                 resultInput.style.height = '70px';
                 resultInput.style.textAlign = 'center';
                 resultInput.style.border = '3px solid black';
+                resultCell.appendChild(resultInput);
+                row.appendChild(resultCell);
+
+                table.appendChild(row);
+            }
+            container.appendChild(table);
+        }
+        
+        randomSystem = () => {
+            var n = document.getElementById('n').value;
+            var container = document.getElementById('matrix-container');
+            container.innerHTML = ''; 
+
+            if (n < 1 || n > 20) {
+                alert('Please enter a number between 1 and 20');
+                return;
+            }
+
+            var table = document.createElement('table');
+            table.style.tableLayout = 'fixed';
+            for (var i = 0; i < n; i++) {
+                var row = document.createElement('tr');
+                for (var j = 0; j < n; j++) {
+                    var cell = document.createElement('td');
+                    var input = document.createElement('input');
+                    input.type = 'text';
+                    input.style.width = '70px'; 
+                    input.style.height = '70px';
+                    input.style.textAlign = 'center';
+                    input.style.border = '1px solid black';
+                    input.value = Math.floor(Math.random() * 10);
+                    cell.appendChild(input);
+                    row.appendChild(cell);
+                }
+
+                var resultCell = document.createElement('td');
+                var resultInput = document.createElement('input');
+                resultInput.id = 'result' + i;
+                resultInput.type = 'text';
+                resultInput.style.width = '70px';
+                resultInput.style.height = '70px';
+                resultInput.style.textAlign = 'center';
+                resultInput.style.border = '3px solid black';
+                resultInput.value = Math.floor(Math.random() * 10);
                 resultCell.appendChild(resultInput);
                 row.appendChild(resultCell);
 

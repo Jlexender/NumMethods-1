@@ -21,17 +21,20 @@ def validate(A, b):
 
 def ensure_diagonal_dominance(A, b):
     n = A.shape[0]
+    dig_dom = True
     for i in range(n):
-        row_sum = sum(abs(A[i][j]) for j in range(n) if j != i)
-        if abs(A[i][i]) < row_sum:
-            for k in range(i + 1, n):
-                if abs(A[k][i]) > row_sum:
-                    A[[i, k]] = A[[k, i]]
-                    b[[i, k]] = b[[k, i]]
+        row_sum = np.sum(np.abs(A[i])) - np.abs(A[i][i])
+        if np.abs(A[i][i]) < row_sum:
+            dig_dom = False
+            for j in range(i + 1, n):
+                if np.abs(A[j][i]) >= np.sum(np.abs(A[j])) - np.abs(A[j][i]):
+                    A[[i, j], :] = A[[j, i], :]
+                    b[[i, j]] = b[[j, i]]
+                    dig_dom = True
                     break
-            else:
-                return [A, b, False]
-    return [A, b, True]
+            if not dig_dom:
+                return A, b, dig_dom
+    return A, b, dig_dom
 
 
 def solve(eqSystem: EqSystemRequest):
@@ -40,7 +43,7 @@ def solve(eqSystem: EqSystemRequest):
         b = np.array(eqSystem.resultVector)
         validate(A, b)
         n = A.shape[0]
-        x = np.zeros(n)
+        x = np.copy(b)
         eps = eqSystem.accuracy
         
         A, b, dig_dom = ensure_diagonal_dominance(A, b)
@@ -53,15 +56,16 @@ def solve(eqSystem: EqSystemRequest):
                 for k in range(n):
                     if j != k:
                         x_new[j] -= A[j][k] * x[k]
+                if A[j][j] == 0:
+                    raise HTTPException(status_code=400, detail="Division by zero encountered in the matrix.")
                 x_new[j] /= A[j][j]
-            if max(abs(x_new - x)) < eps:
+            if np.max(np.abs(x_new - x)) < eps:
                 return {"solution": x_new.tolist(), "iterations": i, 
                 "diagonalDominance": dig_dom, "mat_std_norm": np.linalg.norm(A),
                 "невязка": (np.dot(A, x_new) - b).tolist(),
-                "step_error": abs(x_new - x).tolist()
+                "step_error": np.abs(x_new - x).tolist()
                 }
 
-        
             x = x_new
             i += 1
 
